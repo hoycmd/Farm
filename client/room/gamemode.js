@@ -64,7 +64,7 @@ Room.Damage.OnDeath.Add(function(Player) {
 
 // Константы:
 const MixModeTime = 2;
-const WaitingTime = 2;
+const WaitingTime = 10;
 const End0fMatchTime = 2;
 // Константы, имён:
 const WaitingStateValue = 'Maiting';
@@ -75,6 +75,15 @@ const StateProp = Room.Properties.GetContext().Get('State');
 const ScoresTimer = Room.Timers.GetContext().Get('Scores');
 const MainTimer = Room.Timers.GetContext().Get('Main');
 Room.Ui.GetContext().MainTimerId.Value = MainTimer.Id;
+
+//Таймер очков:
+ScoresTimer.OnTimer.Add(function () {
+ for(const p of Players.All) {
+  p.Properties.Scores.Value += 100;
+  p.Properties.Kills.Value += 50;
+  }
+MainTimer.Restart(2);
+});
 
 // Переключатели, режимов:
 MainTimer.OnTimer.Add(function() {
@@ -112,11 +121,6 @@ function SetMixMode() {
   InventoryContext.Melee.Value = true;
   InventoryContext.Explosive.Value = true;
   InventoryContext.Build.Value = true;
-
- Room.Players.All.forEach(All_Players => {
-  All_Players.Properties.Scores.Value += 100;
-  All_Players.Properties.Kills.Value += 100;
-      });
 }
 function SetEnd0fMatch() {
  StateProp.Value = EndOfMatchStateValue;
@@ -144,3 +148,6 @@ function SpawnTeams() {
                 Room.msg.Show(`${e.name}: ${e.message} ${e.stack}`);
         });
 }
+
+const Scores_timer_interval = 5;
+ScoresTimer.RestartLoop(Scores_timer_interval);
