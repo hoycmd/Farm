@@ -67,6 +67,7 @@ const MixModeTime = 2;
 const WaitingTime = 2;
 const End0fMatchTime = 2;
 // Константы, имён:
+const Scores_timer_interval = 5;
 const WaitingStateValue = 'Maiting';
 const MixModeStateValue = 'MixMode';
 const EndOfMatchStateValue = 'End0fMatch';
@@ -149,5 +150,4 @@ function SpawnTeams() {
         });
 }
 
-const Scores_timer_interval = 5;
 ScoresTimer.RestartLoop(Scores_timer_interval);
