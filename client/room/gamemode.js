@@ -64,7 +64,7 @@ Room.Damage.OnDeath.Add(function(Player) {
 
 // Константы:
 const MixModeTime = 2;
-const WaitingTime = 10;
+const WaitingTime = 2;
 const End0fMatchTime = 2;
 // Константы, имён:
 const WaitingStateValue = 'Maiting';
