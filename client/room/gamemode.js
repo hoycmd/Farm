@@ -78,7 +78,7 @@ Room.Ui.GetContext().MainTimerId.Value = MainTimer.Id;
 
 //Таймер очков:
 ScoresTimer.OnTimer.Add(function () {
- for(const p of Players.All) {
+ for(const p of Room.Players.All) {
   p.Properties.Scores.Value += 100;
   p.Properties.Kills.Value += 50;
   }
