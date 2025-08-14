@@ -1,0 +1,27 @@
+{
+  "Name": "<b><color=Orange>千Ａʀ爪</a> <i><color=Red>ᴮʸ:</a><color=Lime>ƬＮ丅</a></i></b>",
+  "Description": "<b><color=Lime>Простой фарм, сундуков и опыта</a> <i><color=Yellow>ᴮʸ:</a> <color=Red>ƬＮ丅</a></i></b>",
+  "StartClientVersion": 334,
+  "MapFilter": {
+    "IsBlank": false,
+    "HasParcourEnd": false
+  },
+  "MapLists": [
+    {
+      "MapListId": 324,
+      "Name": "Official maps"
+    },
+    {
+      "MapListId": 581
+    }
+  ],
+  "Parameters": {
+    "Bool": [
+      {
+        "Name": "LoadRandomMap",
+        "DisplayName": "<b><color=Lime>Randoms</a> <i><color=Yellow>MAPS</a></i></b>",
+        "Default": true
+      }
+    ]
+  }
+}
