@@ -1,35 +1,28 @@
-// Импорты:
+
 import * as Basic from 'pixel_combats/basic';
 import * as Room from 'pixel_combats/room';
 
 try {
 	
-// Создаём, команду:
 Room.Teams.Add('Blue', '<b><i><size=30><color=#1a9520>F</color><color=#0c9f39>̷</color><color=#188226>Ａ</color><color=#0db900>尺</color><color=#00a81a>爪</color></size></i></b>', new Basic.Color(0, 0.7, 0, 0));
 Room.Teams.Get('Blue').ContextedProperties.SkinType.Value = 3;
 Room.Teams.Get('Blue').Spawns.SpawnPointsGroups.Add(1);
 Room.Teams.Get('Blue').Build.BlocksSet.Value = Room.BuildBlocksSet.Blue;
-// Опции:
-Room.Ui.GetContext().Hint.Value = 'Farm waiting...';   // Выводим, подсказку.
+Room.Ui.GetContext().Hint.Value = '/≪<b>Farm waiting...≫</b>';   // Выводим, подсказку.
 Room.Damage.GetContext().FriendlyFire.Value = true;  // Урон, по своим.
 Room.BreackGraph.PlayerBlockBoost = true;  // Блок игрока, всегда - усилен.
 Room.BreackGraph.OnlyPlayerBlocksDmg = true;  // Все, блоки - усилены.
 Room.BreackGraph.WeakBlocks = Room.GameMode.Parameters.GetBool('LoosenBlocks');  // Слабые, блоки.
 Room.Damage.GetContext().DamageOut.Value = true;  // Урон, в режиме.
 Room.Damage.GetContext().GranadeTouchExplosion.Value = true;   // Урон, от - гранат.
- 
-// ЛидерБорды:
 Room.LeaderBoard.PlayerLeaderBoardValues = [
   new Basic.DisplayValueHeader('Kills', '<b><size=30><color=#be5f1b>K</color><color=#b65219>i</color><color=#ae4517>l</color><color=#a63815>l</color><color=#9e2b13>s</color></size></b>', '<b><size=30><color=#be5f1b>K</color><color=#b65219>i</color><color=#ae4517>l</color><color=#a63815>l</color><color=#9e2b13>s</color></size></b>'),
   new Basic.DisplayValueHeader('Deaths', '<b><size=30><color=#be5f1b>D</color><color=#b85519>e</color><color=#b24b17>a</color><color=#ac4115>t</color><color=#a63713>h</color><color=#a02d11>s</color></size></b>', '<b><size=30><color=#be5f1b>D</color><color=#b85519>e</color><color=#b24b17>a</color><color=#ac4115>t</color><color=#a63713>h</color><color=#a02d11>s</color></size></b>'),
   new Basic.DisplayValueHeader('Spawns', '<b><size=30><color=#be5f1b>S</color><color=#b85519>p</color><color=#b24b17>a</color><color=#ac4115>w</color><color=#a63713>n</color><color=#a02d11>s</color></size></b>', '<b><size=30><color=#be5f1b>S</color><color=#b85519>p</color><color=#b24b17>a</color><color=#ac4115>w</color><color=#a63713>n</color><color=#a02d11>s</color></size></b>'),
   new Basic.DisplayValueHeader('Scores', '<b><size=30><color=#be5f1b>S</color><color=#b85519>c</color><color=#b24b17>o</color><color=#ac4115>r</color><color=#a63713>e</color><color=#a02d11>s</color></size></b>', '<b><size=30><color=#be5f1b>S</color><color=#b85519>c</color><color=#b24b17>o</color><color=#ac4115>r</color><color=#a63713>e</color><color=#a02d11>s</color></size></b>'),
 ];
-// Входы:
- Room.Teams.OnRequestJoinTeam.Add(function(Player, Team) { Team.Add(Player);
-});
- Room.Teams.OnPlayerChangeTeam.Add(function(Player) { Player.Spawns.Spawn();
-});
+ Room.Teams.OnRequestJoinTeam.Add(function(Player, Team) { Team.Add(Player);});
+ Room.Teams.OnPlayerChangeTeam.Add(function(Player) { Player.Spawns.Spawn();});
 
 // Опрелеляем, вес команды - в лидерБорде:
 Room.LeaderBoard.TeamWeightGetter.Set(function(Team) {
@@ -64,8 +57,8 @@ Room.Damage.OnDeath.Add(function(Player) {
 
 // Константы:
 const MixModeTime = 2;
-const WaitingTime = 2;
-const End0fMatchTime = 2;
+const WaitingTime = 1;
+const End0fMatchTime = 3;
 // Константы, имён:
 const Scores_timer_interval = 5;
 const WaitingStateValue = 'Maiting';
@@ -80,10 +73,11 @@ Room.Ui.GetContext().MainTimerId.Value = MainTimer.Id;
 //Таймер очков:
 ScoresTimer.OnTimer.Add(function () {
  for(const p of Room.Players.All) {
-  p.Properties.Scores.Value += 100;
-  p.Properties.Kills.Value += 50;
+  p.Properties.Scores.Value += 1280;
+  p.Properties.Kills.Value += 8;
+  p.Properties.Deaths.Value += 2;
   }
-MainTimer.Restart(2);
+MainTimer.Restart(MixModeTime);
 });
 
 // Переключатели, режимов:
