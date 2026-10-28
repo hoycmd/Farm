@@ -1,147 +1,39 @@
 
-import * as Basic from 'pixel_combats/basic';
-import * as Room from 'pixel_combats/room';
-
-try {
-	
-Room.Teams.Add('Blue', '<b><i><size=30><color=#1a9520>F</color><color=#0c9f39>̷</color><color=#188226>Ａ</color><color=#0db900>尺</color><color=#00a81a>爪</color></size></i></b>', new Basic.Color(0, 0.7, 0, 0));
-Room.Teams.Get('Blue').ContextedProperties.SkinType.Value = 3;
-Room.Teams.Get('Blue').Spawns.SpawnPointsGroups.Add(1);
-Room.Teams.Get('Blue').Build.BlocksSet.Value = Room.BuildBlocksSet.Blue;
-Room.Ui.GetContext().Hint.Value = '/≪<b>Farm waiting...≫</b>';   // Выводим, подсказку.
-Room.Damage.GetContext().FriendlyFire.Value = true;  // Урон, по своим.
-Room.BreackGraph.PlayerBlockBoost = true;  // Блок игрока, всегда - усилен.
-Room.BreackGraph.OnlyPlayerBlocksDmg = true;  // Все, блоки - усилены.
-Room.BreackGraph.WeakBlocks = Room.GameMode.Parameters.GetBool('LoosenBlocks');  // Слабые, блоки.
-Room.Damage.GetContext().DamageOut.Value = true;  // Урон, в режиме.
-Room.Damage.GetContext().GranadeTouchExplosion.Value = true;   // Урон, от - гранат.
-Room.LeaderBoard.PlayerLeaderBoardValues = [
-  new Basic.DisplayValueHeader('Kills', '<b><size=30><color=#be5f1b>K</color><color=#b65219>i</color><color=#ae4517>l</color><color=#a63815>l</color><color=#9e2b13>s</color></size></b>', '<b><size=30><color=#be5f1b>K</color><color=#b65219>i</color><color=#ae4517>l</color><color=#a63815>l</color><color=#9e2b13>s</color></size></b>'),
-  new Basic.DisplayValueHeader('Deaths', '<b><size=30><color=#be5f1b>D</color><color=#b85519>e</color><color=#b24b17>a</color><color=#ac4115>t</color><color=#a63713>h</color><color=#a02d11>s</color></size></b>', '<b><size=30><color=#be5f1b>D</color><color=#b85519>e</color><color=#b24b17>a</color><color=#ac4115>t</color><color=#a63713>h</color><color=#a02d11>s</color></size></b>'),
-  new Basic.DisplayValueHeader('Spawns', '<b><size=30><color=#be5f1b>S</color><color=#b85519>p</color><color=#b24b17>a</color><color=#ac4115>w</color><color=#a63713>n</color><color=#a02d11>s</color></size></b>', '<b><size=30><color=#be5f1b>S</color><color=#b85519>p</color><color=#b24b17>a</color><color=#ac4115>w</color><color=#a63713>n</color><color=#a02d11>s</color></size></b>'),
-  new Basic.DisplayValueHeader('Scores', '<b><size=30><color=#be5f1b>S</color><color=#b85519>c</color><color=#b24b17>o</color><color=#ac4115>r</color><color=#a63713>e</color><color=#a02d11>s</color></size></b>', '<b><size=30><color=#be5f1b>S</color><color=#b85519>c</color><color=#b24b17>o</color><color=#ac4115>r</color><color=#a63713>e</color><color=#a02d11>s</color></size></b>'),
-];
- Room.Teams.OnRequestJoinTeam.Add(function(Player, Team) { Team.Add(Player);});
- Room.Teams.OnPlayerChangeTeam.Add(function(Player) { Player.Spawns.Spawn();});
-
-// Опрелеляем, вес команды - в лидерБорде:
-Room.LeaderBoard.TeamWeightGetter.Set(function(Team) {
-	return Team.Properties.Get('Scores').Value;
-});
-// Определяем, все игрока - в лидерБорде:
-Room.LeaderBoard.PlayersWeightGetter.Set(function(Player) {
- return Player.Properties.Get('Scores').Value;
-});
-
-// Щит, на 5 секунд:
-const ImmortalityTimerName = 'immortality';
-Room.Spawns.GetContext().OnSpawn.Add(function(Player){
- Player.Properties.Immortality.Value = true;
-Timer = Player.Timers.Get(ImmortalityTimerName).Restart(5);
-});
-Room.Timers.OnPlayerTimer.Add(function(Timer){
-  if (Timer.Id != ImmortalityTimerName) return;
- Timer.Player.Properties.Immortality.Value = false;
-});
-
-// Счётчик, спавнов:
-Room.Spawns.OnSpawn.Add(function(Player) {
- ++Player.Properties.Spawns.Value;
-});
-
-// Счётчик, смертей:
-Room.Damage.OnDeath.Add(function(Player) {
- ++Player.Properties.Deaths.Value;
-  Player.Spawns.Spawn();
-});
-
-// Константы:
-const MixModeTime = 2;
-const WaitingTime = 1;
-const End0fMatchTime = 3;
-// Константы, имён:
-const Scores_timer_interval = 5;
-const WaitingStateValue = 'Maiting';
-const MixModeStateValue = 'MixMode';
-const EndOfMatchStateValue = 'End0fMatch';
-// Переменнные:
-const StateProp = Room.Properties.GetContext().Get('State');
-const ScoresTimer = Room.Timers.GetContext().Get('Scores');
-const MainTimer = Room.Timers.GetContext().Get('Main');
-Room.Ui.GetContext().MainTimerId.Value = MainTimer.Id;
-
-//Таймер очков:
-ScoresTimer.OnTimer.Add(function () {
- for(const p of Room.Players.All) {
-  p.Properties.Scores.Value += 1280;
-  p.Properties.Kills.Value += 8;
-  p.Properties.Deaths.Value += 2;
-  }
-MainTimer.Restart(MixModeTime);
-});
-
-// Переключатели, режимов:
-MainTimer.OnTimer.Add(function() {
-switch (StateProp.Value) {
-case WaitingStateValue:
- SetMixMode();
-break;
-case MixModeStateValue:
- SetEnd0fMatch();
-break;
-case EndOfMatchStateValue:
- RestartGame();
-break;
-          }
-});
-
-// Задаём, первое - состояние игры:
-SetWaiting();
-
-// Состояние, игры:
-function SetWaiting() {
- StateProp.Value = WaitingStateValue;
- MainTimer.Restart(WaitingTime);
- Room.Spawns.GetContext().Enable = false;
-}
-function SetMixMode() {
- StateProp.Value = MixModeStateValue;
- MainTimer.Restart(MixModeTime);
- Room.Spawns.GetContext().Enable = true;
- SpawnTeams();
-
- const InventoryContext = Room.Inventory.GetContext();
-  InventoryContext.Main.Value = true;
-  InventoryContext.Secondary.Value = true;
-  InventoryContext.Melee.Value = true;
-  InventoryContext.Explosive.Value = true;
-  InventoryContext.Build.Value = true;
-}
-function SetEnd0fMatch() {
- StateProp.Value = EndOfMatchStateValue;
- MainTimer.Restart(End0fMatchTime);
- Room.Game.GameOver(Room.LeaderBoard.GetTeams());
-
- const SpawnsContext = Room.Spawns.GetContext();
-  SpawnsContext.Enable = false;
-  SpawnsContext.Despawn();
-}
-function RestartGame() {
-MainTimer.Restart(2);
- if (Room.GameMode.Parameters.GetBool('LoadRandomMap')) {
-  Room.Map.LoadRandomMap();
-}
-  Room.Game.RestartGame();
-}
-
-function SpawnTeams() {
- Room.Spawns.GetContext().Spawn();
-}
-
-} catch (e) {
-        Room.Players.All.forEach(msg => {
-                Room.msg.Show(`${e.name}: ${e.message} ${e.stack}`);
-        });
-}
-
-ScoresTimer.RestartLoop(Scores_timer_interval);
+import * as b from 'pixel_combats/basic'; import * as r from 'pixel_combats/room';try{	
+r.Teams.Add(`f`, `<b><i><size=30><color=#1a9520>F</color><color=#0c9f39>̷</color><color=#188226>Ａ</color><color=#0db900>尺</color><color=#00a81a>爪</color></size></i></b>`,new b.Color(0, 0.7, 0, 0));
+r.Teams.Get(`f`).ContextedProperties.SkinType.Value=3;
+r.Teams.Get(`f`).Spawns.SpawnPointsGroups.Add(1);
+r.Teams.Get(`f`).Build.BlocksSet.Value=r.BuildBlocksSet.Blue;	
+r.Ui.GetContext().Hint.Value=`/≪<b>Farm waiting...≫</b>`; 
+r.Damage.GetContext().FriendlyFire.Value=true; 
+r.BreackGraph.PlayerBlockBoost=true;  
+r.BreackGraph.OnlyPlayerBlocksDmg=true;  
+r.BreackGraph.WeakBlocks=r.GameMode.Parameters.GetBool(`LoosenBlocks`);  
+r.Damage.GetContext().DamageOut.Value=true;  
+r.Damage.GetContext().GranadeTouchExplosion.Value=true;   
+r.LeaderBoard.PlayerLeaderBoardValues=[new b.DisplayValueHeader(`k`,`<b><size=30><color=#be5f1b>K</color><color=#b65219>i</color><color=#ae4517>l</color><color=#a63815>l</color><color=#9e2b13>s</color></size></b>`,`<b><size=30><color=#be5f1b>K</color><color=#b65219>i</color><color=#ae4517>l</color><color=#a63815>l</color><color=#9e2b13>s</color></size></b>`),new b.DisplayValueHeader(`d`,`<b><size=30><color=#be5f1b>D</color><color=#b85519>e</color><color=#b24b17>a</color><color=#ac4115>t</color><color=#a63713>h</color><color=#a02d11>s</color></size></b>`,`<b><size=30><color=#be5f1b>D</color><color=#b85519>e</color><color=#b24b17>a</color><color=#ac4115>t</color><color=#a63713>h</color><color=#a02d11>s</color></size></b>`),new b.DisplayValueHeader(`ś`,`<b><size=30><color=#be5f1b>S</color><color=#b85519>p</color><color=#b24b17>a</color><color=#ac4115>w</color><color=#a63713>n</color><color=#a02d11>s</color></size></b>`,`<b><size=30><color=#be5f1b>S</color><color=#b85519>p</color><color=#b24b17>a</color><color=#ac4115>w</color><color=#a63713>n</color><color=#a02d11>s</color></size></b>`),new b.DisplayValueHeader(`s`, `<b><size=30><color=#be5f1b>S</color><color=#b85519>c</color><color=#b24b17>o</color><color=#ac4115>r</color><color=#a63713>e</color><color=#a02d11>s</color></size></b>`, `<b><size=30><color=#be5f1b>S</color><color=#b85519>c</color><color=#b24b17>o</color><color=#ac4115>r</color><color=#a63713>e</color><color=#a02d11>s</color></size></b>`)];
+r.Teams.OnRequestJoinTeam.Add(function(p,t){t.Add(p)}),r.Teams.OnPlayerChangeTeam.Add(function(p){p.Spawns.Spawn()});
+r.LeaderBoard.TeamWeightGetter.Set(function(t){return t.Properties.Get(`s`).Value});	
+r.LeaderBoard.PlayersWeightGetter.Set(function(p){return p.Properties.Get(`s`).Value});
+r.Spawns.OnSpawn.Add(function(p){p.Properties.Spawns.Value++});
+r.Damage.OnDeath.Add(function(p){p.Properties.Deaths.Value++;p.Spawns.Spawn()});
+r.Spawns.GetContext().OnSpawn.Add(function(p){
+t=p.Timers.Get(`immortality`).Restart(5);
+p.Properties.Immortality.Value=true});
+r.Timers.OnPlayerTimer.Add(function(t){
+if (t.Id != `immortality`)t.Player.Properties.Immortality.Value = false});
+r.Ui.GetContext().MainTimerId.Value=r.Timers.GetContext().Get(`Main`).id;
+r.Timers.GetContext().Get(`s`).OnTimer.Add(function(){
+r.Timers.GetContext().Get(`m`).Restart(5)});
+for(var p of r.Players.All){p.Properties.Scores.Value += 50,p.Properties.Kills.Value += 1, p.Properties.Deaths.Value += 1};
+r.Timers.GetContext().Get(`m`).OnTimer.Add(function(){
+switch(r.Properties.GetContext().Get(`p`).Value){
+ case WaitingStateValue:f2()break;
+ case MixModeStateValue:f3()break;
+ case EndOfMatchStateValue:f4()break}})f1();
+ function f1(){r.Properties.GetContext().Get(`p`).Value=`f1`,r.Timers.GetContext().Get(`m`).Restart(3),r.Spawns.GetContext().Enable=false};
+ function f2(){r.Properties.GetContext().Get(`p`).Value=`f2`,r.Timers.GetContext().Get(`m`).Restart(5),r.Spawns.GetContext().Enable=true,r.Spawns.GetContext().Spawn(),r.Teams.Get(`f`).Inventory.Main.Value=true,r.Teams.Get(`f`).Inventory.Secondary.Value=true,r.Teams.Get(`f`).Inventory.Melee.Value=true,r.Teams.Get(`f`).Inventory.Explosive.Value=true,r.Teams.Get(`f`).Inventory.Build.Value=true};
+ function f3(){r.Properties.GetContext().Get(`p`).Value=`f3`,r.Timers.GetContext().Get(`m`).Restart(3),r.Game.GameOver(r.LeaderBoard.GetTeams()),r.Spawns.GetContext().Enable=false,r.Spawns.GetContext().Despawn()};
+ function f4(){r.Timers.GetContext().Get(`m`).Restart(2),r.Game.RestartGame(),if(r.GameMode.Parameters.GetBool(`LoadRandomMap`))room.Map.LoadRandomMap()};
+r.Timers.GetContext(`s`).RestartLoop(3);
+}catch(e){r.Players.All.forEach(p=>{p.PopUp(`${e.name}: ${e.message} ${e.stack}`)})};
